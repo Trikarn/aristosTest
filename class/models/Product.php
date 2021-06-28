@@ -11,10 +11,10 @@ class Product extends Database
     private $created_at;
     private $params;
 
-    function __construct($title, $created_at, $params)
+    function __construct($title = 'Test', $params = [])
     {
         $this->title = $title;
-        $this->created_at = $created_at;
+        $this->created_at = time();
         $this->params = $params;
     }
 
@@ -22,7 +22,7 @@ class Product extends Database
     {
         $title = $this->title;
         $created_at = $this->created_at;
-        $params = $this->params;
+        $params = json_encode($this->params);
 
         $db = $this->setConnection();
         $db->exec('CREATE TABLE if not exists products (id INTEGER PRIMARY KEY AUTOINCREMENT , title STRING, created_at INTEGER, params text)');
@@ -44,6 +44,7 @@ class Product extends Database
 
         $result = [];
         while ($row = $query->fetchArray(SQLITE3_ASSOC)) {
+            $row['params'] = json_decode(json_encode($row['params']),true);
             $result[] = $row;
         }
 
@@ -72,6 +73,21 @@ class Product extends Database
 
     public function unsetParam($path)
     {
+  
+        $arr = &$this->params; 
+        $keys = explode('.', $path);
+        $lastKey = array_pop($keys);
+    
+        foreach ($keys as $key) {
+            $arr = &$arr[$key];
+        }
+        unset($arr[$lastKey]);
+
+
+        return;
+    }
+    public function unsetParams($path)
+    {
         $deletions = [];
         
         if(is_array($path)) {
@@ -82,21 +98,11 @@ class Product extends Database
             if(count($keys) != 0) {
                 //Несколько удалений
                 $deletions = $keys;
-            } else {
-                // Одно удаление
-                $deletions = $path;
             }
         }
 
         foreach($deletions as $deletion) {
-            $arr = &$this->params; 
-            $keys = explode('.', $deletion);
-            $lastKey = array_pop($keys);
-        
-            foreach ($keys as $key) {
-                $arr = &$arr[$key];
-            }
-            unset($arr[$lastKey]);
+            $this->unsetParam($deletion);
         }
 
         return;

@@ -10,16 +10,16 @@ class Order extends Database
     private $created_at;
     public $params = [];
 
-    function __construct($created_at, $params)
+    function __construct($params = [])
     {
-        $this->created_at = $created_at;
+        $this->created_at = time();
         $this->params = $params;
     }
 
     public function saveDataDB()
     {
         $created_at = $this->created_at;
-        $params = $this->params;
+        $params = json_encode($this->params);
 
         $db = $this->setConnection();
         $db->exec('CREATE TABLE if not exists orders (id INTEGER PRIMARY KEY AUTOINCREMENT , created_at INTEGER, params text)');
@@ -40,6 +40,7 @@ class Order extends Database
 
         $result = [];
         while ($row = $query->fetchArray(SQLITE3_ASSOC)) {
+            $row['params'] = json_decode(json_encode($row['params']),true);
             $result[] = $row;
         }
 
@@ -68,6 +69,21 @@ class Order extends Database
 
     public function unsetParam($path)
     {
+        
+        $arr = &$this->params; 
+        $keys = explode('.', $path);
+        $lastKey = array_pop($keys);
+    
+        foreach ($keys as $key) {
+            $arr = &$arr[$key];
+        }
+        unset($arr[$lastKey]);
+        
+        return;
+    }
+
+    public function unsetParams($path)
+    {
         $deletions = [];
         
         if(is_array($path)) {
@@ -78,21 +94,11 @@ class Order extends Database
             if(count($keys) != 0) {
                 //Несколько удалений
                 $deletions = $keys;
-            } else {
-                // Одно удаление
-                $deletions = $path;
-            }
+            } 
         }
 
         foreach($deletions as $deletion) {
-            $arr = &$this->params; 
-            $keys = explode('.', $deletion);
-            $lastKey = array_pop($keys);
-        
-            foreach ($keys as $key) {
-                $arr = &$arr[$key];
-            }
-            unset($arr[$lastKey]);
+            $this->unsetParam($deletion);
         }
 
         return;
@@ -119,4 +125,6 @@ class Order extends Database
 
         return $result;
     }
+
+    
 }
