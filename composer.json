@@ -1,0 +1,13 @@
+{
+    "name": "aristos-test/app",
+    "description" : "description",
+    "authors": [
+      {
+        "name": "Anatoliy",
+        "email": "test@example.com"
+      }
+    ],
+    "autoload": {
+      "psr-4": {"Classes\\": "class/"}
+    }
+  }
