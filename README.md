@@ -4,5 +4,5 @@
 //AssertArraySubset устарел и был удален в новых версиях PHPUnit так что пришлось
 //использовать стороннюю библиотеку
 
-![alt text](alterTest.png "Тест")
+Результат тестирование в screenshots/UnitTestResult.png
 
